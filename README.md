@@ -1,6 +1,7 @@
-# Apache Flink极客挑战赛——垃圾图片分类
+# [Apache Flink极客挑战赛——垃圾图片分类](https://tianchi.aliyun.com/competition/entrance/231743/rankingList)
 
 队伍：SpacePro
+
 名次：第1名
 
 ## 程序目录结构介绍
@@ -22,6 +23,7 @@
 
 
 ### 3. 确保package目录结构
+
 > + package
 > + python_package
 >     + model.py
@@ -30,8 +32,7 @@
 >     + efficientnet-b2_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5
 >     + efficientnet-b3_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5
 >     + efficientnet-b4_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5
->  + requirements.txt
->  + garbage_image-1.0-SNAPSHOT.jar
+> + requirements.txt  + garbage_image-1.0-SNAPSHOT.jar
 
 ### 4. 确保环境变量
 > os.environ['**IMAGE_TRAIN_INPUT_PATH**']
