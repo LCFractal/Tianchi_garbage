@@ -65,7 +65,7 @@ Score： 81.48
 #### a. 主干网络抽取融合feature
 
  1) 数据准备：
-```pyhon
+```python
 BATCH_SIZE = 64     # 每个Batch输入64个样本
 IMG_HEIGHT = 380    # 输入图片为380*380
 IMG_WIDTH = 380
