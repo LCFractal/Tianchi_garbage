@@ -33,11 +33,10 @@ if len(output_dir) == 0:
 if output_dir[-1] != "/" and output_dir[-1] != "\\":
     output_dir = output_dir + "/"
 
-# load data
+# load class data
 classtxt = "/class_index.txt"
-# dir_path no '/'
+# dir_path doesn't contain last '/'
 dir_path = os.path.dirname(os.path.abspath(__file__))
-# print dir_path + classtxt
 fi = io.open(dir_path + classtxt, "r", encoding="UTF8")
 table = {}
 CLASS_NAMES = [""] * 100
@@ -47,6 +46,7 @@ for ii in fi:
     table[iis[0]] = int(iis[1])
     CLASS_NAMES[int(iis[1])] = iis[0]
 
+# Image size, B* is default input size for EfficientNet
 B0 = 224
 B1 = 240
 B2 = 260
@@ -57,11 +57,12 @@ BATCH_SIZE = 64
 IMG_HEIGHT = 380
 IMG_WIDTH = 380
 
+# just for local test, because local machine doesn't have so much memory
 if output_dir == "../../backup/":
     BATCH_SIZE = 32
 
 
-# load images
+# Image preprocessing function, normalize to [-1,1]
 def preProcessing(img):
     img[:, :, :] = img[:, :, :] / 127.5 - 1
     return img
@@ -86,6 +87,8 @@ test_data_gen = image_generator.flow_from_directory(directory=train_dir,
                                                     shuffle=False,
                                                     target_size=(IMG_HEIGHT, IMG_WIDTH),
                                                     classes=CLASS_NAMES, subset="validation")
+
+# 曾经测试用
 all_data_gen = image_generator.flow_from_directory(directory=train_dir,
                                                    batch_size=BATCH_SIZE,
                                                    shuffle=True,
@@ -105,6 +108,7 @@ base_model1 = efn.EfficientNetB3(include_top=False, weights=None,
                                  input_tensor=inputLayer, input_shape=(IMG_HEIGHT, IMG_WIDTH, 3), pooling='avg')
 base_model1.trainable = False
 base_model1.load_weights(dir_path + "/efficientnet-b3_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5")
+
 base_model2 = efn.EfficientNetB4(include_top=False, weights=None,
                                  input_tensor=inputLayer, input_shape=(IMG_HEIGHT, IMG_WIDTH, 3), pooling='avg')
 base_model2.trainable = False
@@ -118,7 +122,7 @@ outdim = base_model2.output.shape.as_list()[1]
 imdim = 100
 mul = 6         # 数据增强参数，将输出feature扩充为数据集mul倍
 if output_dir == "../../backup/":
-    mul = 2
+    mul = 2 # 限于内存，本地机器就只扩充为2倍
 l = len(train_data_gen) * mul
 train_x = np.zeros((l * BATCH_SIZE, outdim))
 train_y = np.zeros((l * BATCH_SIZE, 100))
@@ -145,17 +149,18 @@ test_y = test_y[0:total, :]
 six.print_("calc svd at %f", time.clock())
 s, v, dh = np.linalg.svd(train_x, full_matrices=False)
 sumall = np.sum(np.square(v))
+# 保留90%特征
 while np.sum(np.square(v[0:imdim])) / sumall < 0.90:
     imdim = imdim + 100
 six.print_("outdim=%d,imdim=%d, rate:%f" % (outdim, imdim, np.sum(np.square(v[0:imdim])) / sumall))
 d = np.transpose(dh)[:, 0:imdim]
 six.print_("finish svd at %f", time.clock())
 
-# 构建新训练集（新数据集为原始图片通过backbone得到的feature）
+# 构建新训练集（新数据集为原始图片通过backbone得到的feature，再乘以svd的特征矩阵）
 new_train_x = np.dot(train_x, d)
 new_test_x = np.dot(test_x, d)
 
-# 正则化SVD结果
+# 正则化SVD结果（由于SVD乘出来数值较大，使得最后一层也输出较大，使softmax过于“自信”）
 scale = np.linalg.norm(new_train_x) / np.sqrt(new_train_x.shape[0])
 new_train_x = new_train_x / scale
 new_test_x = new_test_x / scale
@@ -163,7 +168,7 @@ d = d / scale
 
 
 def makeModel():
-    # make all model used by zoo
+    # 构建zoo用的model，首先定义一个Dense层用来实现svd的乘，即train_x=>new_train_x
     swish = efn.get_swish()
     merge = base_model2.output
     mergelayer = tf.keras.layers.Dense(imdim, use_bias=False, activation=swish)
@@ -171,6 +176,7 @@ def makeModel():
     mergelayer.set_weights([d])
     mergelayer.trainable = False
 
+    # GaussianDropout，引入噪声
     merge = tf.keras.layers.GaussianDropout(0.5)(merge)
 
     excitation = tf.keras.layers.Dense(units=imdim // 16, activation=swish)(merge)
@@ -180,6 +186,8 @@ def makeModel():
 
     out = tf.keras.layers.Activation("softmax")(predictions)
     model_zoo = tf.keras.Model(inputs=inputLayer, outputs=out)
+
+    # 构建训练用模型，input对应new_train_x
     inputx = tf.keras.layers.Input(batch_shape=(None, imdim), name="input_dim")
 
     merge = tf.keras.layers.GaussianDropout(0.5)(inputx)
@@ -218,18 +226,20 @@ def onEpochEnd(epoch, logs):
         clearDir(output_dir + "/SavedModel/")
         tf.keras.experimental.export_saved_model(model_out, output_dir + "/SavedModel/")
 
-
-minlossfunc = tf.keras.callbacks.LambdaCallback(on_epoch_end=onEpochEnd)
+# 回调，用于将当前val_acc最高保存为输出模型
+minaccfunc = tf.keras.callbacks.LambdaCallback(on_epoch_end=onEpochEnd)
 
 # 进行top model训练
 if output_dir == "../../backup/":
+    # 本地训练，额外输出tensorboard数据
     board = tf.keras.callbacks.TensorBoard(log_dir="E:\\天池\\backup\\logs")
     clearDir("E:\\天池\\backup\\logs")
     clearDir("E:\\天池\\backup\\plugins")
-    history = model.fit(new_train_x, train_y, batch_size=BATCH_SIZE, callbacks=[reduce_lr, board, minlossfunc],
+    history = model.fit(new_train_x, train_y, batch_size=BATCH_SIZE, callbacks=[reduce_lr, board, minaccfunc],
                         epochs=100, validation_data=(new_test_x, test_y))
 else:
-    history = model.fit(new_train_x, train_y, batch_size=BATCH_SIZE, callbacks=[reduce_lr, minlossfunc],
+    # 天池训练
+    history = model.fit(new_train_x, train_y, batch_size=BATCH_SIZE, callbacks=[reduce_lr, minaccfunc],
                         epochs=100, validation_data=(new_test_x, test_y))
 
 six.print_(bestacc)
