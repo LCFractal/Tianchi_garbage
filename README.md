@@ -13,7 +13,9 @@ Score： 81.48
 
 ## 构建说明
 
-提供完整可直接运行压缩包：下载
+提供完整可直接运行压缩包：
+
+链接： https://share.weiyun.com/5nWfsBw （密码：Ytc0）
 
 ### 1. java构建
 
@@ -175,12 +177,13 @@ def onEpochEnd(epoch, logs):
             w = model.layers[li].get_weights()
             model_out.layers[li].set_weights(w)
         clearDir(output_dir + "/SavedModel/")
-        # 将分类器权值导入用于导出的模型，并导出
         tf.keras.experimental.export_saved_model(model_out, output_dir + "/SavedModel/")
-minlossfunc = tf.keras.callbacks.LambdaCallback(on_epoch_end=onEpochEnd)
+
+# 回调，用于将当前val_acc最高保存为输出模型
+bestaccfunc = tf.keras.callbacks.LambdaCallback(on_epoch_end=onEpochEnd)
 
 # 使用融合feature进行100个epoch训练
-history = model.fit(new_train_x, train_y, batch_size=BATCH_SIZE, callbacks=[reduce_lr, minlossfunc],
+history = model.fit(new_train_x, train_y, batch_size=BATCH_SIZE, callbacks=[reduce_lr, bestaccfunc],
                     epochs=100, validation_data=(new_test_x, test_y))
 ```
 ### 3. Prediction
