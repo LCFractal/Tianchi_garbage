@@ -14,7 +14,7 @@ Score： 81.48
 ## 构建说明
 提供完整可直接运行压缩包：下载
 ### 1. java构建
-使用maven打包程序，得到`garbage_image-1.0-SNAPSHOT.jar`，放入package目录。 
+入口为`RunZoo3.java`，使用maven打包程序，得到`garbage_image-1.0-SNAPSHOT.jar`，放入package目录。 
 ### 2. 下载预训练模型
 模型使用EfficientNet作为基本模型，分别需要EfficientNetB2,B3,B4的预训练模型(下载后的h5文件放入`package/python_package`)
 
@@ -171,7 +171,23 @@ history = model.fit(new_train_x, train_y, batch_size=BATCH_SIZE, callbacks=[redu
                     epochs=100, validation_data=(new_test_x, test_y))
 ```
 ### 3. Prediction
-预测在Flink端进行，
+预测在Flink端进行，调用完整模型，只进行简单的放缩至[-1,1]预处理
+```java
+// 参数设置
+String modelPath = System.getenv("MODEL_INFERENCE_PATH")+"/SavedModel";
+boolean ifReverseInputChannels = true;
+int[] inputShape = {1, 380, 380, 3};
+float[] meanValues = {127.5f, 127.5f, 127.5f};
+float scale = 127.5f;
+String input = "input_1";
+```
+Flink调用，进行预测
+```java
+flinkEnv.addSource(source).setParallelism(1)
+    .flatMap(new ModelPredictionMapFunction2(modelPath,inputShape,ifReverseInputChannels,meanValues,scale,
+                                             input,labelTable)).setParallelism(1)
+    .addSink(new ImageClassSink()).setParallelism(1);
+```
 
 
 
