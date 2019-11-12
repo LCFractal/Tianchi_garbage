@@ -15,7 +15,9 @@
 模型使用EfficientNet作为基本模型，分别需要EfficientNetB2,B3,B4的预训练模型
 
 > **EfficientNetB2**(https://github.com/Callidior/keras-applications/releases/download/efficientnet/efficientnet-b2_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5)
+
 > **EfficientNetB3**(https://github.com/Callidior/keras-applications/releases/download/efficientnet/efficientnet-b3_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5)
+
 > **EfficientNetB4**(https://github.com/Callidior/keras-applications/releases/download/efficientnet/efficientnet-b4_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5)
 
 
@@ -33,4 +35,5 @@
 
 ### 4. 确保环境变量
 > os.environ['**IMAGE_TRAIN_INPUT_PATH**']
+
 > os.environ[**'MODEL_INFERENCE_PATH**']
