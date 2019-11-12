@@ -12,10 +12,15 @@ Score： 81.48
 -  [package](https://github.com/LCFractal/Tianchi_garbage/tree/master/package) : 打包用目录，包含Python代码
 
 ## 构建说明
+
 提供完整可直接运行压缩包：下载
+
 ### 1. java构建
+
 入口为`RunZoo3.java`，使用maven打包程序，得到`garbage_image-1.0-SNAPSHOT.jar`，放入package目录。 
+
 ### 2. 下载预训练模型
+
 模型使用EfficientNet作为基本模型，分别需要EfficientNetB2,B3,B4的预训练模型(下载后的h5文件放入`package/python_package`)
 
 > **EfficientNet-B2**(https://github.com/Callidior/keras-applications/releases/download/efficientnet/efficientnet-b2_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5)
@@ -39,16 +44,21 @@ Score： 81.48
 >   + garbage_image-1.0-SNAPSHOT.jar
 
 ### 4. 确保环境变量
+
 > os.environ['**IMAGE_TRAIN_INPUT_PATH**']
 
 > os.environ[**'MODEL_INFERENCE_PATH**']
 
 ### 5. 打包并上传
+
 将`package`文件夹打包上传天池。
 
 ## 模型说明
+
 ![Model][1]
+
 ### 1. 概览
+
 我们的模型是个融合模型，具体结构如图，分为两个部分：**主干网络**+**分类器**。
 
 在Training阶段，经过增强的图像作为输入通过主干网络得到`融合feature`。使用`融合feature`及对应的标签，构建新的数据集针对分类器进行100个Epoch的训练，从中得到`val_acc`最大的模型，融合主干网络和分类器导出模型，作为总模型用于在Flink中进行预测。
@@ -114,6 +124,7 @@ mergelayer = tf.keras.layers.Concatenate()([base_model0.output, base_model1.outp
 base_model2 = tf.keras.Model(inputs=inputLayer, outputs=mergelayer)
 ```
 3) 使用SVD，获取融合feature
+
 我们将输入图片扩充为6倍（因为ImageDataGenerator使用了很多变换）
 ```python
 mul = 6         # 数据增强参数，将输出feature扩充为数据集mul倍
@@ -138,7 +149,9 @@ new_test_x = new_test_x / scale
 d = d / scale
 ```
 其中，`new_train_x`为新训练集，`train_y`为训练集标签；`new_test_x`为新测试集，`test_y`为测试集标签。
+
 #### b) 使用融合feature训练分类器
+
 构建分类器（具体参考结构图和源代码）
 ```python
 # model 用于python训练，model_out用于输出给zoo调用
@@ -171,6 +184,7 @@ history = model.fit(new_train_x, train_y, batch_size=BATCH_SIZE, callbacks=[redu
                     epochs=100, validation_data=(new_test_x, test_y))
 ```
 ### 3. Prediction
+
 预测在Flink端进行，调用完整模型，只进行简单的放缩至[-1,1]预处理
 ```java
 // 参数设置
