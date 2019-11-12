@@ -13,28 +13,37 @@
 ### 1. java构建
 使用maven打包程序，得到对应jar包放入package目录 
 ### 2. 下载预训练模型
-模型使用EfficientNet作为基本模型，分别需要EfficientNetB2,B3,B4的预训练模型
+模型使用EfficientNet作为基本模型，分别需要EfficientNetB2,B3,B4的预训练模型(下载后的h5文件放入`package/python_package`)
 
-> **EfficientNetB2**(https://github.com/Callidior/keras-applications/releases/download/efficientnet/efficientnet-b2_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5)
+> **EfficientNet-B2**(https://github.com/Callidior/keras-applications/releases/download/efficientnet/efficientnet-b2_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5)
 
-> **EfficientNetB3**(https://github.com/Callidior/keras-applications/releases/download/efficientnet/efficientnet-b3_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5)
+> **EfficientNet-B3**(https://github.com/Callidior/keras-applications/releases/download/efficientnet/efficientnet-b3_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5)
 
-> **EfficientNetB4**(https://github.com/Callidior/keras-applications/releases/download/efficientnet/efficientnet-b4_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5)
+> **EfficientNet-B4**(https://github.com/Callidior/keras-applications/releases/download/efficientnet/efficientnet-b4_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5)
 
 
 ### 3. 确保package目录结构
 
 > + package
-> + python_package
->     + model.py
->     + model_eff.py
->     + class_index.txt
->     + efficientnet-b2_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5
->     + efficientnet-b3_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5
->     + efficientnet-b4_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5
-> + requirements.txt  + garbage_image-1.0-SNAPSHOT.jar
+>   + python_package
+>       + model.py
+>       + model_eff.py
+>       + class_index.txt
+>       + efficientnet-b2_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5
+>       + efficientnet-b3_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5
+>       + efficientnet-b4_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5
+>   + requirements.txt
+>   + garbage_image-1.0-SNAPSHOT.jar
 
 ### 4. 确保环境变量
 > os.environ['**IMAGE_TRAIN_INPUT_PATH**']
 
 > os.environ[**'MODEL_INFERENCE_PATH**']
+
+## 模型说明
+![Model][1]
+### 概览
+
+
+  [1]: https://raw.githubusercontent.com/LCFractal/Tianchi_garbage/master/img/Tianchi_garbage.png
+  
