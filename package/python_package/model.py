@@ -227,7 +227,7 @@ def onEpochEnd(epoch, logs):
         tf.keras.experimental.export_saved_model(model_out, output_dir + "/SavedModel/")
 
 # 回调，用于将当前val_acc最高保存为输出模型
-minaccfunc = tf.keras.callbacks.LambdaCallback(on_epoch_end=onEpochEnd)
+bestaccfunc = tf.keras.callbacks.LambdaCallback(on_epoch_end=onEpochEnd)
 
 # 进行top model训练
 if output_dir == "../../backup/":
@@ -235,11 +235,11 @@ if output_dir == "../../backup/":
     board = tf.keras.callbacks.TensorBoard(log_dir="E:\\天池\\backup\\logs")
     clearDir("E:\\天池\\backup\\logs")
     clearDir("E:\\天池\\backup\\plugins")
-    history = model.fit(new_train_x, train_y, batch_size=BATCH_SIZE, callbacks=[reduce_lr, board, minaccfunc],
+    history = model.fit(new_train_x, train_y, batch_size=BATCH_SIZE, callbacks=[reduce_lr, board, bestaccfunc],
                         epochs=100, validation_data=(new_test_x, test_y))
 else:
     # 天池训练
-    history = model.fit(new_train_x, train_y, batch_size=BATCH_SIZE, callbacks=[reduce_lr, minaccfunc],
+    history = model.fit(new_train_x, train_y, batch_size=BATCH_SIZE, callbacks=[reduce_lr, bestaccfunc],
                         epochs=100, validation_data=(new_test_x, test_y))
 
 six.print_(bestacc)
