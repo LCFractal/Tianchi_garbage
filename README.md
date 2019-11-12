@@ -70,7 +70,7 @@ Score： 81.48
 ### 2. Training
 任务要求在线上只有3个小时的训练时间，如果直接进行训练，本模型线上**最多训练5个Epoch**。在transfer learning中，Backbone部分不需要进行训练，因此在每次训练中，Backbone的输出是固定的，**我们不需要每个Epoch都计算Backbong的输出**。
 
-通过上述观察，我们将训练阶段分为两个部分：**1.**主干网络抽取融合feature；**2.**使用融合feature训练分类器。
+通过上述观察，我们将训练阶段分为两个部分：1.主干网络抽取融合feature；2.使用融合feature训练分类器。
 
 #### a. 主干网络抽取融合feature
 
