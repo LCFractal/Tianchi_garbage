@@ -1,9 +1,3 @@
-# 在此处输入标题
-
-标签（空格分隔）： 未分类
-
----
-
 # Apache Flink极客挑战赛——垃圾图片分类
 
 队伍：SpacePro
@@ -21,22 +15,22 @@
 模型使用EfficientNet作为基本模型，分别需要EfficientNetB2,B3,B4的预训练模型
 
 > **EfficientNetB2**(https://github.com/Callidior/keras-applications/releases/download/efficientnet/efficientnet-b2_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5)
-**EfficientNetB3**(https://github.com/Callidior/keras-applications/releases/download/efficientnet/efficientnet-b3_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5)
-**EfficientNetB4**(https://github.com/Callidior/keras-applications/releases/download/efficientnet/efficientnet-b4_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5)
+> **EfficientNetB3**(https://github.com/Callidior/keras-applications/releases/download/efficientnet/efficientnet-b3_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5)
+> **EfficientNetB4**(https://github.com/Callidior/keras-applications/releases/download/efficientnet/efficientnet-b4_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5)
 
 
 ### 3. 确保package目录结构
 > + package
-  + python_package
-     + model.py
-     + model_eff.py
-     + class_index.txt
-     + efficientnet-b2_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5
-     + efficientnet-b3_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5
-     + efficientnet-b4_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5
-  + requirements.txt
-  + garbage_image-1.0-SNAPSHOT.jar
+> + python_package
+>     + model.py
+>     + model_eff.py
+>     + class_index.txt
+>     + efficientnet-b2_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5
+>     + efficientnet-b3_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5
+>     + efficientnet-b4_weights_tf_dim_ordering_tf_kernels_autoaugment_notop.h5
+>  + requirements.txt
+>  + garbage_image-1.0-SNAPSHOT.jar
 
 ### 4. 确保环境变量
 > os.environ['**IMAGE_TRAIN_INPUT_PATH**']
-  os.environ[**'MODEL_INFERENCE_PATH**']
+> os.environ[**'MODEL_INFERENCE_PATH**']
