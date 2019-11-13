@@ -15,7 +15,11 @@ Score： 81.48
 
 提供完整可直接运行压缩包：
 
-链接： https://share.weiyun.com/5nWfsBw （密码：Ytc0）
+腾讯微云：链接： https://share.weiyun.com/5nWfsBw （密码：Ytc0）
+
+或
+
+QQ文件中转站：[下载链接](http://mail.qq.com/cgi-bin/ftnExs_download?k=723233620cf2dc83f05c73731533514c57510504505255541f045004511e570003051e030a06524e02005500570550530b0a0053333863135351580354564d195b42335f&t=exs_ftn_download&code=223b33cc)
 
 ### 1. java构建
 
