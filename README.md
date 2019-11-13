@@ -140,11 +140,11 @@ test_y          # 存储对应测试标签
 s, v, dh = np.linalg.svd(train_x, full_matrices=False)
 d = np.transpose(dh)[:, 0:imdim]
 
-# 构建新训练集（新数据集为原始图片通过backbone得到的feature）
+# 构建新训练集（新数据集为原始图片通过backbone得到的feature，再乘以svd的特征矩阵）
 new_train_x = np.dot(train_x, d)
 new_test_x = np.dot(test_x, d)
 
-# 正则化SVD结果
+# 正则化SVD结果（由于SVD直接乘出来数值较大，使得最后一层也输出较大，使softmax过于“自信”）
 scale = np.linalg.norm(new_train_x) / np.sqrt(new_train_x.shape[0])
 new_train_x = new_train_x / scale
 new_test_x = new_test_x / scale
