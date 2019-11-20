@@ -26,7 +26,7 @@ public class RunZoo3 {
         ImageDirSource source = new ImageDirSource();
         flinkEnv.addSource(source).setParallelism(1)
                 .flatMap(new ModelPredictionMapFunction2(modelPath,inputShape,ifReverseInputChannels,meanValues,scale,
-                        input,labelTable)).setParallelism(1)
+                        input,labelTable)).setParallelism(2)
                 .addSink(new ImageClassSink()).setParallelism(1);
                 //.addSink(new ClassSink()).setParallelism(1);
         flinkEnv.execute();
