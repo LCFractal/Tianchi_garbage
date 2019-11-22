@@ -17,9 +17,34 @@ Score： 81.48
  5. Flink端限制单张图片500ms，因此需要尽可能简单的预处理与尽可能高效的模型。
  6. 因为测试阶段图片不能进行过多的处理，训练得到的模型需要有足够的适应性，我们需要数据增强方案来增加模型适应性。
 
+## 基本架构
+![Roadmap][2]
+在以上的思考下，我们构建了一个基本的架构：TensorFlow + Apache Flink + Analytics Zoo。
+
+**TensorFlow**部分用于模型的构建和训练，在比赛限制下我们需要实现以下几点：
+
+ - 易于训练：模型需要在短时间内收敛到很高的精度或者在短时间能够完成大量的训练
+ - 快速和高效：模型的快速和高效正是达到易于训练的一个方式，同时也保证了更短的推理时间
+ - 具有高宽容度：实际场景下图片的输入存在很多不确定性，尽可能少的对图片进行预处理就可以得到高精度的结果也是一个模型所必须的
+
+**Apache Flink** 和 **Analytics Zoo** 用于测试端的构建和模型推理，因此我们需要实现以下几点：
+
+ - 高效的结构：简洁高效的结构保证没有冗余的代码造成不必要的资源消耗
+ - 简洁的预处理：过多的预处理会造成更大的负担，在模型具有高宽容度的情况下，越简单的预处理越高效
+ - 导入模型：通过 Analytics Zoo 能够简单直接的导入 TensorFlow savedmodel ，保证输入和训练时一致即可
+
+## Apache Flink & Analytics Zoo
+![Pre-processing][3]
+
+ 在比赛要求下输入和输出已经固定，我们需要构建的是Flatmap部分，在这部分中我们完成了两个功能：
+ 
+
+ 1. 对输入数据流的预处理；
+ 2. 载入模型并进行预测。
+
 ## 模型分析
 
-![Model Analysis][2]
+![Model Analysis][4]
 
 在比赛期间我们所使用模型的路线图，这些模型在提升精度的同时依旧保证了效率。最终我们得到了精度最高的模型，达到了**81.48%**。
 
@@ -32,10 +57,9 @@ Score： 81.48
 6. Flink端的预处理仅仅将输入图片放缩至[-1,1]，保证足够快的测试速度。
 7. 使用常用的数据增强方式(旋转、平移、反转、放缩)进一步增加模型的宽容度。
 
-
 ## 模型构建
 
-![Model][3]
+![Model][5]
 
 ### 1. 概览
 
@@ -54,7 +78,7 @@ Score： 81.48
 
 #### a) 主干网络抽取融合Feature
 
-![Backbone][4]
+![Backbone][6]
 
  1) 数据准备：
 ```python
@@ -116,7 +140,7 @@ train_y         # 存储对应训练标签
 test_x          # 存储输出的feature，用于测试
 test_y          # 存储对应测试标签
 ```
-![SVD][5]
+![SVD][7]
 
 > 计算SVD，得到融合feature，构建新的训练集
 
@@ -139,7 +163,7 @@ d = d / scale
 
 #### b) 使用融合feature训练分类器
 
-![Classifier][6]
+![Classifier][8]
 
 > 构建分类器
 ```python
@@ -177,7 +201,7 @@ history = model.fit(new_train_x, train_y, batch_size=BATCH_SIZE, callbacks=[redu
 
 ### 3. Prediction
 
-![Prediction][7]
+![Prediction][9]
 
 在预测阶段我们将之前的主干网络和分类器合并为一个网络，需要注意的是SVD层我们根据SVD计算结果构造一个全连接层来达到SVD层的效果。这里有一个假设，训练集和测试集为同一个分布，处于同一个特征空间下，这样我们可以认为通过训练集计算出的SVD参数已经可以代表测试集的参数。
 
@@ -201,7 +225,7 @@ flinkEnv.addSource(source).setParallelism(1)
 ```
 
 ## 实验分析
-![Analysis][8]
+![Analysis][10]
 
 我们的模型在3EfficientNets的基础上进一步引入了SVD和attention结构，消融实验表明了我们引入的结构对于模型的提升是十分明显的，特别是在SVD和attention被同时使用时。
 
@@ -228,12 +252,20 @@ flinkEnv.addSource(source).setParallelism(1)
  - 使用更加有针对性的数据增强能够进一步提升模型的性能。
  - 目前的分类器对于特征的利用依然简单，或许可以构建更加有效利用特征的分类器提升性能。
 
+## 感想和感谢
+紧张刺激的两个多月的比赛结束了，无数个日夜的提交，不眠不休的讨论，了解了理论与实践的差距，明白了实践出真知的真谛。每一次的挑战，都是一次收获。学术是一个有限输入无限资源的环境，实际场景却是一个无限输入有限资源的环境，在诸多的限制下实现理论的效果是一个挑战。本次比赛之后，依然还有很长的路要走。
+
+感谢两个月以来一起奋战的队友们，感谢大赛组委会的辛苦劳动和帮助。
+
+
 
   [1]: https://raw.githubusercontent.com/LCFractal/Tianchi_garbage/master/img/PPT/02.PNG
-  [2]: https://raw.githubusercontent.com/LCFractal/Tianchi_garbage/master/img/PPT/03.PNG
-  [3]: https://raw.githubusercontent.com/LCFractal/Tianchi_garbage/master/img/PPT/04.PNG
-  [4]: https://raw.githubusercontent.com/LCFractal/Tianchi_garbage/master/img/PPT/11.PNG
-  [5]: https://raw.githubusercontent.com/LCFractal/Tianchi_garbage/master/img/PPT/10.PNG
-  [6]: https://raw.githubusercontent.com/LCFractal/Tianchi_garbage/master/img/PPT/12.PNG
-  [7]: https://raw.githubusercontent.com/LCFractal/Tianchi_garbage/master/img/PPT/13.PNG
-  [8]: https://raw.githubusercontent.com/LCFractal/Tianchi_garbage/master/img/PPT/14.PNG
+  [2]: https://raw.githubusercontent.com/LCFractal/Tianchi_garbage/master/img/PPT/18.PNG
+  [3]: https://raw.githubusercontent.com/LCFractal/Tianchi_garbage/master/img/PPT/19.png
+  [4]: https://raw.githubusercontent.com/LCFractal/Tianchi_garbage/master/img/PPT/03.PNG
+  [5]: https://raw.githubusercontent.com/LCFractal/Tianchi_garbage/master/img/PPT/04.PNG
+  [6]: https://raw.githubusercontent.com/LCFractal/Tianchi_garbage/master/img/PPT/11.PNG
+  [7]: https://raw.githubusercontent.com/LCFractal/Tianchi_garbage/master/img/PPT/10.PNG
+  [8]: https://raw.githubusercontent.com/LCFractal/Tianchi_garbage/master/img/PPT/12.PNG
+  [9]: https://raw.githubusercontent.com/LCFractal/Tianchi_garbage/master/img/PPT/13.PNG
+  [10]: https://raw.githubusercontent.com/LCFractal/Tianchi_garbage/master/img/PPT/14.PNG
